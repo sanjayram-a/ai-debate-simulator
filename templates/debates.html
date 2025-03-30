@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Debates</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Active Debates</h1>
+        
+        <div class="debates-list">
+            {% if debates %}
+                {% for debate in debates %}
+                    <div class="debate-card">
+                        <h2>{{ debate.topic }}</h2>
+                        <div class="debate-card-status status-{{ debate.status }}">
+                            {{ debate.status }}
+                        </div>
+                        <div class="debate-card-agents">
+                            Participating Agents: {{ debate.agents|join(', ') }}
+                        </div>
+                        <div>Rounds: {{ debate.rounds }}</div>
+                        <a href="{{ url_for('view_debate', debate_id=debate.id) }}" class="debate-card-link">View Debate →</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No active debates at the moment.</p>
+            {% endif %}
+        </div>
+
+        <div class="view-debates">
+            <a href="{{ url_for('index') }}" class="btn-secondary">Start New Debate</a>
+        </div>
+    </div>
+</body>
+</html>

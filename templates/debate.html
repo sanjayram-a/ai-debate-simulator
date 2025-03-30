@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debate - {{ topic }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="debate-container">
+            <div class="debate-header">
+                <h1 class="debate-topic">{{ topic }}</h1>
+                <div class="debate-status" id="status">{{ status }}</div>
+            </div>
+            
+            <div id="debate-log" class="debate-log">
+                <!-- Debate messages will be dynamically inserted here -->
+            </div>
+
+            <div id="debate-summary" class="debate-summary" style="display: none;">
+                <h2>Debate Summary</h2>
+                <div id="summary-content"></div>
+            </div>
+        </div>
+
+        <div class="view-debates">
+            <a href="{{ url_for('index') }}" class="btn-secondary">Back to Home</a>
+            <a href="{{ url_for('list_debates') }}" class="btn-secondary">View All Debates</a>
+        </div>
+    </div>
+
+    <script>
+        const debateId = "{{ debate_id }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

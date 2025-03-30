@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Debate Simulator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>AI Debate Simulator</h1>
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+        
+        <form action="{{ url_for('start_debate') }}" method="POST" class="debate-form">
+            <div class="form-group">
+                <label for="topic">Debate Topic:</label>
+                <input type="text" id="topic" name="topic" value="AI and Data Science Trends" required>
+            </div>
+
+            <div class="form-group">
+                <label>Select Domains (minimum 2):</label>
+                <div class="domains-grid">
+                    <div class="domain-option">
+                        <input type="checkbox" id="ai" name="domains" value="ai">
+                        <label for="ai">Artificial Intelligence</label>
+                    </div>
+                    <div class="domain-option">
+                        <input type="checkbox" id="data_science" name="domains" value="data_science">
+                        <label for="data_science">Data Science</label>
+                    </div>
+                    <div class="domain-option">
+                        <input type="checkbox" id="ml" name="domains" value="ml">
+                        <label for="ml">Machine Learning</label>
+                    </div>
+                    <div class="domain-option">
+                        <input type="checkbox" id="data_analytics" name="domains" value="data_analytics">
+                        <label for="data_analytics">Data Analytics</label>
+                    </div>
+                    <div class="domain-option">
+                        <input type="checkbox" id="programming" name="domains" value="programming">
+                        <label for="programming">Programming</label>
+                    </div>
+                    <div class="domain-option">
+                        <input type="checkbox" id="ui_ux" name="domains" value="ui_ux">
+                        <label for="ui_ux">UI/UX Design</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="rounds">Number of Rounds:</label>
+                <input type="number" id="rounds" name="rounds" value="3" min="1" max="10" required>
+            </div>
+
+            <div class="form-group">
+                <label for="llm_type">LLM Type:</label>
+                <select id="llm_type" name="llm_type" required>
+                    <option value="ollama">Ollama</option>
+                    <option value="openai">OpenAI</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="model_name">Model Name:</label>
+                <input type="text" id="model_name" name="model_name" value="qwen2.5:3b" required>
+            </div>
+
+            <button type="submit" class="btn-primary">Start Debate</button>
+        </form>
+
+        <div class="view-debates">
+            <a href="{{ url_for('list_debates') }}" class="btn-secondary">View Active Debates</a>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

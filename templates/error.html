@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - AI Debate Simulator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="error-message">
+            {{ message }}
+        </div>
+        <div class="view-debates">
+            <a href="{{ url_for('index') }}" class="btn-secondary">Back to Home</a>
+            <a href="{{ url_for('list_debates') }}" class="btn-secondary">View Active Debates</a>
+        </div>
+    </div>
+</body>
+</html>
