@@ -27,7 +27,9 @@ class Agent:
         self.llm_type = llm_type
         self.model_name = model_name
         self.context: Dict[str, Any] = {}
-
+    
+    
+    
     async def generate_response(self, prompt: str, context: Optional[Dict[str, Any]] = None) -> str:
         """
         Generate a response based on the prompt and context.
@@ -55,11 +57,11 @@ class Agent:
         # Create the full prompt with system prompt and context
         full_prompt = f"""{self.system_prompt}
 
-The current context includes:
-- Topic: {self.context.get('topic', 'Unknown')}
-- Round: {self.context.get('current_round', 0)} of {self.context.get('total_rounds', 0)}
+        The current context includes:
+        - Topic: {self.context.get('topic', 'Unknown')}
+        - Round: {self.context.get('current_round', 0)} of {self.context.get('total_rounds', 0)}
 
-{enhanced_prompt}
+        {enhanced_prompt}
 
 Provide your expert perspective, using the knowledge from your domain to support your arguments."""
 
@@ -80,6 +82,6 @@ Provide your expert perspective, using the knowledge from your domain to support
             str: The system prompt describing the agent's role and capabilities
         """
         return f"""You are an expert in {self.domain} speaking from that perspective.
-Your name is {self.name}.
-Base your responses on factual knowledge and current best practices in {self.domain}.
-Maintain a professional and objective tone while engaging in constructive debate. debate under 100words with simple words"""
+        Your name is {self.name}.
+        Base your responses on factual knowledge and current best practices in {self.domain}.
+        Maintain a professional and objective tone while engaging in constructive debate. debate under 100words with simple words"""

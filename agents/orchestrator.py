@@ -1,6 +1,8 @@
 import asyncio
 from typing import List, Dict, Any
 from .agent import Agent
+import markdown
+from llama_index.llms.ollama import Ollama
 
 class DebateOrchestrator:
     def __init__(
@@ -28,8 +30,8 @@ class DebateOrchestrator:
         self.debate_log: List[Dict[str, Any]] = []
         self.summary = ""
         self.status = "initialized"
-        self.summary_llm_type = summary_llm_type
-        self.summary_model_name = summary_model_name
+        self.summary_llm_type = "ollama"
+        self.summary_model_name = "qwen2.5:3b"
 
     async def conduct_round(self) -> None:
         """Conduct a single round of debate."""
@@ -67,22 +69,60 @@ class DebateOrchestrator:
             ])
             return f"""Consider the previous responses:
 
-{previous_responses}
+            {previous_responses}
 
-As an expert in {agent.domain}, how do you respond to these points regarding {self.topic}?"""
+            As an expert in {agent.domain}, how do you respond to these points regarding {self.topic}?"""
 
     async def generate_summary(self) -> str:
         """Generate a summary of the debate."""
-        # TODO: Implement actual summary generation using LLM
-        # For now, return a simple summary
         points = "\n".join([f"- {entry['agent']}: {entry['response']}" 
                            for entry in self.debate_log])
-        self.summary =  f"""Debate Summary:
-        Topic: {self.topic}
-        Number of Rounds: {self.current_round}
-        Key Points:
-        {points}"""
-        return self.summary
+        prompt = f"""As an expert debate analyzer, provide a comprehensive markdown-formatted summary of this AI debate:
+
+        {self.topic}
+
+        ## Debate Overview
+        - **Total Rounds**: {self.current_round}
+        - **Participants**: {", ".join(agent.name for agent in self.agents)}
+
+        ## Key Arguments
+        {points}
+
+        ## Analysis
+
+        ### Main Points by Each Participant
+
+        ###winner
+
+        ### Conclusion 
+
+        Note: dont give any debate agent respones in the summary, also give winner if possible,
+        Format the response maintaining the markdown structure with proper headers, bullet points, and emphasis."""
+
+        # Use LLM to generate summary
+        if self.summary_llm_type == "ollama":
+            llm = Ollama(model=self.summary_model_name, temperature=0.7, request_timeout=300)
+        else:
+            raise ValueError(f"Unsupported LLM type: {self.summary_llm_type}")
+
+        try:
+            response = llm.complete(prompt)
+            # Clean the response and ensure it's a string
+            response_text = str(response).strip()
+            
+            # Convert markdown to HTML with safe extensions
+            self.summary = markdown.markdown(
+                response_text,
+                extensions=['extra', 'nl2br'],
+                output_format='html5',
+                safe_mode='escape'
+            )
+            return self.summary
+        except Exception as e:
+            error_msg = f"Error generating summary: {str(e)}"
+            print(error_msg)
+            self.summary = f"<p class='error'>{error_msg}</p>"
+            return self.summary
 
 
     async def conduct_debate(self) -> None:
@@ -111,9 +151,43 @@ As an expert in {agent.domain}, how do you respond to these points regarding {se
         finally:
             loop.close()
 
+    def _analyze_debate_quality(self) -> Dict[str, Any]:
+        """Analyze the quality and progression of the debate."""
+        analysis = {
+            "participation": {},
+            "interaction_score": 0,
+            "knowledge_usage": {},
+            "topic_adherence": 0
+        }
+        
+        # Analyze participation and knowledge usage for each agent
+        for agent in self.agents:
+            agent_responses = [entry for entry in self.debate_log if entry["agent"] == agent.name]
+            analysis["participation"][agent.name] = len(agent_responses)
+            
+            # Count domain-specific references
+            knowledge_refs = sum(1 for entry in agent_responses
+                              if f"[{agent.domain}]" in entry["response"])
+            analysis["knowledge_usage"][agent.name] = knowledge_refs
+
+        # Calculate interaction score based on cross-references
+        total_responses = len(self.debate_log)
+        cross_refs = sum(1 for entry in self.debate_log[len(self.agents):]
+                        if any(agent.name in entry["response"]
+                              for agent in self.agents))
+        if total_responses > len(self.agents):
+            analysis["interaction_score"] = cross_refs / (total_responses - len(self.agents))
+
+        # Calculate topic adherence
+        topic_mentions = sum(1 for entry in self.debate_log
+                           if self.topic.lower() in entry["response"].lower())
+        analysis["topic_adherence"] = topic_mentions / total_responses if total_responses > 0 else 0
+
+        return analysis
+
     def get_status(self) -> Dict[str, Any]:
-        """Get the current status of the debate."""
-        return {
+        """Get the current status of the debate with quality metrics."""
+        status = {
             "status": self.status,
             "current_round": self.current_round,
             "total_rounds": self.total_rounds,
@@ -121,3 +195,9 @@ As an expert in {agent.domain}, how do you respond to these points regarding {se
             "log_length": len(self.debate_log),
             "has_summary": bool(self.summary)
         }
+
+        # Add debate quality analysis if debate has started
+        if self.debate_log:
+            status["analysis"] = self._analyze_debate_quality()
+
+        return status

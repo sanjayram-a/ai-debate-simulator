@@ -7,6 +7,9 @@ from agents.orchestrator import DebateOrchestrator
 
 app = Flask(__name__)
 
+# Disable static file caching during development
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
 # Initialize knowledge base manager
 kb_manager = DomainKnowledgeBaseManager(base_dir="knowledge_base/domains")
 
@@ -102,10 +105,28 @@ def debate_log(debate_id):
         return jsonify({"error": f"Debate {debate_id} not found"}), 404
 
     debate = active_debates[debate_id]
+    # Get debate analysis
+    analysis = debate._analyze_debate_quality()
+    
+    # Structure the response data
     log_data = {
         "status": debate.status,
-        "log": debate.debate_log,
-        "summary": debate.summary
+        "debate_info": {
+            "topic": debate.topic,
+            "total_rounds": debate.total_rounds,
+            "current_round": debate.current_round,
+            "participants": [agent.name for agent in debate.agents]
+        },
+        "debate_content": {
+            "log": debate.debate_log,
+            "summary": debate.summary
+        },
+        "debate_analysis": {
+            "participation_metrics": analysis["participation"],
+            "interaction_score": round(analysis["interaction_score"] * 100, 2),
+            "knowledge_usage": analysis["knowledge_usage"],
+            "topic_adherence": round(analysis["topic_adherence"] * 100, 2)
+        }
     }
     return jsonify(log_data)
 

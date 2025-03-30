@@ -14,6 +14,11 @@
                 <div class="debate-status" id="status">{{ status }}</div>
             </div>
             
+            <div id="loading" class="loading-indicator">
+                <div class="loading-spinner"></div>
+                <p>Debate in progress...</p>
+            </div>
+
             <div id="debate-log" class="debate-log">
                 <!-- Debate messages will be dynamically inserted here -->
             </div>
@@ -30,8 +35,17 @@
         </div>
     </div>
 
+    <!-- Add marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         const debateId = "{{ debate_id }}";
+        // Configure marked options
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false
+        });
     </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

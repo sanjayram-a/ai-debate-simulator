@@ -13,11 +13,12 @@ class KnowledgeBase:
         domain_name: str,
         documents_dir: str,
         embedding_model: str = "nomic-embed-text:latest",
-
+        llm_model: str = "qwen2.5:3b"
     ):
         self.domain_name = domain_name
         self.documents_dir = documents_dir
         self.embedding_model = embedding_model
+        self.llm_model = llm_model
         self.index = None
 
         # Initialize the knowledge base
@@ -27,8 +28,8 @@ class KnowledgeBase:
         """Initialize the vector database with documents."""
         try:
             # Configure settings
-            Settings.embed_model = OllamaEmbedding(model_name=self.embedding_model,)
-            Settings.llm = Ollama(model=self.embedding_model)
+            Settings.embed_model = OllamaEmbedding(model_name=self.embedding_model)
+            Settings.llm = Ollama(model=self.llm_model)
             Settings.node_parser = SentenceSplitter(chunk_size=1024)
 
             # Check if documents directory exists
@@ -96,7 +97,7 @@ Original prompt:
             # Limit response length
             response_text = str(response)
             if len(response_text) > max_tokens:
-                response_text = response_text[:max_tokens] + "..."
+                response_text = response_text[:max_tokens] + " [truncated]"
 
             return response_text
         except Exception as e:
